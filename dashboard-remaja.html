@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Remaja GBI ROCK — Dashboard</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+:root { --bg:#0f0f1a; --card:#1a1a2e; --card2:#16213e; --primary:#7c3aed; --primary-dim:#6d28d92a; --accent:#f59e0b; --text:#e2e8f0; --muted:#94a3b8; --border:#1e293b; --success:#22c55e; --radius:16px; }
+html { font-size:15px; }
+body { font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif; background:var(--bg); color:var(--text); min-height:100vh; padding-bottom:80px; }
+header { background:linear-gradient(135deg,var(--card),var(--primary)30); padding:20px 16px 16px; border-bottom:1px solid var(--border); position:sticky; top:0; z-index:50; backdrop-filter:blur(12px); }
+header h1 { font-size:1.5rem; font-weight:700; }
+header .sub { color:var(--muted); font-size:.8rem; }
+.progress-wrap { margin-top:12px; display:flex; align-items:center; gap:12px; }
+.progress-bar { flex:1; height:6px; background:var(--border); border-radius:99px; overflow:hidden; }
+.progress-bar .fill { height:100%; width:0%; background:linear-gradient(90deg,var(--primary),var(--accent)); border-radius:99px; transition:width .5s ease; }
+.progress-wrap .label { font-size:.75rem; color:var(--muted); white-space:nowrap; }
+
+.bottom-nav { position:fixed; bottom:0; left:0; right:0; background:var(--card); border-top:1px solid var(--border); display:flex; justify-content:space-around; padding:8px 0 12px; z-index:100; }
+.bottom-nav button { background:none; border:none; color:var(--muted); font-size:.7rem; display:flex; flex-direction:column; align-items:center; gap:2px; cursor:pointer; padding:4px 8px; border-radius:12px; transition:all .2s; }
+.bottom-nav button .icon { font-size:1.4rem; }
+.bottom-nav button.active { color:var(--primary); background:var(--primary-dim); }
+
+.tab { display:none; padding:16px; }
+.tab.active { display:block; }
+
+.filter-bar { display:flex; gap:8px; margin-bottom:16px; }
+.filter-bar button { padding:6px 16px; border-radius:99px; border:1px solid var(--border); background:var(--card); color:var(--muted); cursor:pointer; font-size:.8rem; }
+.filter-bar button.active { background:var(--primary); color:#fff; border-color:var(--primary); }
+
+.ep-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; cursor:pointer; position:relative; }
+.ep-card:hover { border-color:var(--primary); }
+.ep-card.current { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+.ep-card .badge { display:inline-block; font-size:.65rem; font-weight:600; padding:2px 8px; border-radius:99px; margin-bottom:6px; }
+.badge-past { background:var(--border); color:var(--muted); }
+.badge-current { background:#f59e0b20; color:var(--accent); border:1px solid var(--accent); }
+.badge-upcoming { background:var(--primary-dim); color:var(--primary); }
+.ep-card h3 { font-size:1rem; margin:4px 0 6px; }
+.ep-card .meta { font-size:.8rem; color:var(--muted); display:flex; gap:12px; flex-wrap:wrap; }
+.ep-card .verse-badge { display:inline-block; background:var(--primary-dim); color:var(--primary); padding:2px 10px; border-radius:99px; font-size:.75rem; margin-top:8px; }
+.ep-card .series-tag { position:absolute; top:16px; right:16px; font-size:.65rem; color:var(--muted); background:var(--bg); padding:2px 8px; border-radius:99px; }
+
+.sec { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:16px; margin-bottom:12px; }
+.sec h3 { font-size:.9rem; font-weight:600; margin-bottom:8px; }
+.sec p, .sec li { font-size:.85rem; line-height:1.6; }
+.sec ul { padding-left:20px; }
+.sec .highlight { background:var(--primary-dim); padding:8px 12px; border-radius:8px; border-left:3px solid var(--primary); margin:8px 0; font-size:.85rem; }
+
+.game-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+.game-card h4 { font-size:.9rem; margin-bottom:4px; }
+.game-card .tags { display:flex; gap:6px; margin:6px 0 8px; flex-wrap:wrap; }
+.game-card .tags span { font-size:.65rem; padding:2px 8px; border-radius:99px; background:var(--border); color:var(--muted); }
+.game-card p { font-size:.8rem; color:var(--muted); line-height:1.5; }
+
+.song-chip { display:inline-block; background:var(--card2); padding:4px 12px; border-radius:99px; font-size:.8rem; margin:3px; border:1px solid var(--border); }
+
+.tool-section { margin-bottom:20px; }
+.tool-section h3 { font-size:1rem; margin-bottom:8px; }
+.chk-item { display:flex; align-items:center; gap:10px; padding:10px 12px; background:var(--card); border:1px solid var(--border); border-radius:10px; margin-bottom:6px; cursor:pointer; font-size:.85rem; }
+.chk-item.done { opacity:.6; text-decoration:line-through; }
+.chk-item input[type=checkbox] { accent-color:var(--primary); width:18px; height:18px; }
+
+.tarea { width:100%; background:var(--card); border:1px solid var(--border); border-radius:10px; padding:12px; color:var(--text); font-size:.85rem; resize:vertical; min-height:60px; margin-bottom:8px; }
+.tarea:focus { outline:none; border-color:var(--primary); }
+
+.wa-card { background:var(--card); border:1px solid var(--border); border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+.wa-text { font-size:.85rem; line-height:1.6; margin-bottom:8px; padding:8px; background:var(--bg); border-radius:8px; white-space:pre-wrap; }
+.wa-actions { display:flex; gap:8px; }
+.wa-actions button { padding:8px 16px; border-radius:8px; border:none; cursor:pointer; font-size:.75rem; font-weight:500; }
+.btn-copy { background:var(--primary); color:#fff; }
+.btn-wa { background:#25d366; color:#fff; }
+
+select { width:100%; padding:10px; border-radius:10px; background:var(--card); color:var(--text); border:1px solid var(--border); font-size:.85rem; margin-bottom:12px; }
+input[type=number], input[type=text] { width:100%; padding:10px; border-radius:10px; background:var(--card); color:var(--text); border:1px solid var(--border); font-size:.85rem; margin-bottom:8px; }
+
+.back-btn { background:none; border:none; color:var(--primary); cursor:pointer; font-size:.85rem; margin-bottom:12px; }
+.empty { text-align:center; padding:40px; color:var(--muted); font-size:.85rem; }
+
+@media (min-width:600px) { body { max-width:500px; margin:0 auto; } }
+@media print { .bottom-nav { display:none !important; } }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🫂 Remaja GBI ROCK</h1>
+  <div class="sub">SMP — Season 1: Siapa Aku?</div>
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="fill" id="pbar"></div></div>
+    <span class="label" id="plabel">0/6</span>
+  </div>
+</header>
+
+<div class="tab active" id="t0">
+  <div class="filter-bar">
+    <button class="active" onclick="sf(1)">🎯 S1: Identity</button>
+    <button onclick="sf(0)">🗓️ Semua</button>
+  </div>
+  <div id="tlist"></div>
+</div>
+
+<div class="tab" id="t1">
+  <button class="back-btn" onclick="st(0)">← Timeline</button>
+  <div id="lcont"></div>
+</div>
+
+<div class="tab" id="t2">
+  <input type="text" class="tarea" id="gsearch" placeholder="Cari games..." oninput="rg()" style="min-height:auto">
+  <div id="glist"></div>
+</div>
+
+<div class="tab" id="t3">
+  <div class="tool-section"><h3>✅ Checklist Persiapan</h3><div id="chklist"></div></div>
+  <div class="tool-section"><h3>🎵 Worship Guide</h3><select id="selsong" onchange="rs()"></select><div id="slist"></div></div>
+  <div class="tool-section"><h3>📝 Evaluasi</h3><select id="seleval" onchange="le()"></select><div id="eform"></div></div>
+  <div class="tool-section"><h3>📱 WA Blast</h3><select id="selwa" onchange="rw()"></select><div id="wcont"></div></div>
+</div>
+
+<nav class="bottom-nav">
+  <button class="active" onclick="st(0)"><span class="icon">📅</span>Timeline</button>
+  <button onclick="st(1)"><span class="icon">📖</span>Detail</button>
+  <button onclick="st(2)"><span class="icon">🎮</span>Games</button>
+  <button onclick="st(3)"><span class="icon">✅</span>Tools</button>
+</nav>
+
+<script>
+var E = [{
+    id:1, series:1, week:1,
+    title:'Aku Bukan Kecelakaan', date:'2 Agustus 2026',
+    verse:'Mazmur 139:13-14', keyMessage:'Tuhan sengaja bikin kamu, bukan kebetulan',
+    activity:'Gambar: \'Aku adalah masterpiece\'',
+    hook:'Coba angkat tangan kalo kamu pernah ngerasa: \'Apa aku lahir gak direncanain ya?\' — Hari ini aku mau kasih tau, kamu bukan kecelakaan.',
+    lessonPoints:['Mazmur 139 ditulis Daud. Dia lagi mikir: \'Tuhan, seberapa dalam sih Engkau tau aku?\'', 'Ayat 13 — \'Engkaulah yang membentuk ginjalku, menenun aku dalam kandungan ibuku.\' Tuhan bukan cuma tau, Dia yang bikin.', 'Ayat 14 — \'Aku bersyukur kepada-Mu karena dahsyat dan ajaib jadiku.\' Kamu bukan produk gagal. Kamu masterpiece.', 'Kata \'dahsyat dan ajaib\' — bahasa aslinya menunjukkan sesuatu yang unik, beda, gak ada duanya.'],
+    discussion:['Pernah gak ngerasa \'aku gak berguna\' atau \'aku beban\'? Kapan?', 'Kalo Tuhan sengaja bikin kamu, menurut kamu apa tujuan Tuhan bikin kamu?', 'Apa yang bikin kamu susah percaya kalo kamu berharga di mata Tuhan?'],
+    application:'Minggu ini, setiap kali kamu ngerasa insecure atau gak berharga, bilang: \'Tuhan sengaja bikin aku. Aku bukan kecelakaan.\'',
+    prayerPoints:['Bersyukur karena Tuhan menciptakan kita', 'Minta Tuhan buka mata kita akan harga diri kita di mata-Nya', 'Doa khusus buat yang lagi insecure'],
+    prep:['Kertas HVS + krayon/spidol buat gambar', 'Ayat Mazmur 139:13-14 ditulis di kertas besar / slide', 'Contoh gambar masterpiece', 'Absen kehadiran'],
+    songs:['Kau Yang Terindah — JPCC Worship', 'Engkau Allahku — Sari Simorangkir', 'Bapa Engkau Baik — Nikita'],
+    gameId:'Gambar Dirimu',
+    waText:'🔥 HAI REMAJA! Minggu ini kita mulai SERIES BARU: IDENTITY — \'SIAPA AKU?\'\n\nEpisode 1: AKU BUKAN KECELAKAAN\n🗓️ Minggu, 2 Agustus 2026\n⏰ Jam 16.00 WITA\n📍 GBI ROCK\n\nLo pernah mikir \'aku lahir gak direncanain\'? Atau \'aku gak berharga\'?\nJangan sampai ketinggalan! Tuhan punya jawaban buat kamu 💜\n\nAjak temen-temen kamu juga ya! 🔥🔥'
+},
+  {
+    id:2, series:1, week:2,
+    title:'Aku Berharga', date:'9 Agustus 2026',
+    verse:'Matius 10:29-31', keyMessage:'Harga diri kamu bukan dari nilai atau like, tapi dari Tuhan',
+    activity:'Tulis: \'Aku berharga karena...\'',
+    hook:'Kalo kamu ditanya \'berapa harga kamu?\', kamu jawab apa? Ada orang yang ngukur harga diri dari prestasi, dari pacar, dari followers. Tapi Tuhan ngukur harga kamu dengan standar yang beda.',
+    lessonPoints:['Matius 10 — Yesus ngirim murid-murid. Dia bilang: jangan takut.', 'Ayat 29 — Burung pipit, burung termurah di pasar (2 burung = 1 duit). Kalo Tuhan aja ngurusin burung murah, apalagi kamu?', 'Ayat 30 — \'Rambut kepalamu pun terhitung semua.\' Tuhan tau detail terkecil tentang kamu.', 'Ayat 31 — \'Jangan takut, kamu lebih berharga dari burung pipit.\' Harga kamu bukan dari pencapaian, dari Tuhan.'],
+    discussion:['Apa hal-hal yang bikin kamu ngerasa \'aku berharga\'? (nilai, teman, pujian orang tua?)', 'Kalo semua itu ilang, apa kamu masih berharga?', 'Apa artinya \'rambutmu terhitung\' buat kamu secara pribadi?'],
+    application:'Hari ini, tulis di hp kamu: \'Aku berharga bukan karena apa yang aku lakukan, tapi karena Tuhan mengasihiku.\'',
+    prayerPoints:['Singkirkan rasa tidak berharga', 'Minta Tuhan nyatakan kasih-Nya secara nyata minggu ini'],
+    prep:['Kertas kecil/sticky notes', 'Ayat Matius 10:29-31 di slide', 'Soundtrack lagu \'Kau Berharga\''],
+    songs:['Kau Berharga — True Worshippers', 'S\'perti Engkau Ada — Sari Simorangkir', 'Kasih Setia-Nya — JPCC Worship'],
+    gameId:'Tebak Harganya',
+    waText:'🔥 Episode 2: AKU BERHARGA\n🗓️ 9 Agustus 2026 | Jam 16.00\n\nAda yang ngukur harga diri dari nilai rapor? Dari like Instagram? Dari ditaksir orang?\nMinggu ini kita bongkar: APA SEBENARNYA YANG BUAT LO BERHARGA?\n\nBawa temen-temen! Seru abis! 🔥'
+},
+  {
+    id:3, series:1, week:3,
+    title:'Aku Istimewa', date:'16 Agustus 2026',
+    verse:'1 Petrus 2:9', keyMessage:'Kamu punya bakat unik yang gak dimiliki orang lain',
+    activity:'Talent show mini / sharing bakat',
+    hook:'Kalo semua orang di gereja ini disuruh maju satu-satu, kamu bisa ngapain yang orang lain belum tentu bisa? Hari ini kita rayain keistimewaan kamu.',
+    lessonPoints:['1 Petrus 2:9 — \'Bangsa terpilih, imamat yang rajani, bangsa yang kudus, umat kepunyaan Allah sendiri.\'', 'Kata \'terpilih\' — Tuhan milih kamu dengan sengaja. Gak ada yang dipilih asal-asalan.', '\'Imamat yang rajani\' — kita punya akses langsung ke Tuhan. Istimewa banget.', 'Kamu istimewa bukan karena kamu lebih keren dari orang lain, tapi karena Tuhan ngasih kamu posisi spesial.'],
+    discussion:['Apa bakat atau kelebihan kamu yang kamu syukuri?', 'Pernah gak kamu iri sama bakat orang lain? Kenapa?', 'Menurut kamu, kenapa Tuhan ngasih bakat yang beda-beda?'],
+    application:'Temukan 1 bakat kamu minggu ini dan gunakan itu buat bantu orang lain.',
+    prayerPoints:['Syukur buat bakat unik masing-masing', 'Minta Tuhan pake bakat kita buat jadi berkat'],
+    prep:['Siapkan panggung / area buat talent show', 'Hadiah kecil buat peserta', 'Slide ayat 1 Petrus 2:9'],
+    songs:['Engkaulah Perisaiku — True Worshippers', 'Kuasa-Mu — JPCC Worship', 'All Glory — Nikita'],
+    gameId:'Tebak Bakat',
+    waText:'🇮🇩 MOMENT SPESIAL! 17 Agustus — HUT RI\n🔥 Episode 3: AKU ISTIMEWA\n\nTuhan bilang kamu \'bangsa terpilih\'! \nMinggu ini ada TALENT SHOW — unjuk bakat kamu! 🎤🎸🎨\n\n🗓️ 16 Agustus 2026 | 16.00\n📍 GBI ROCK\n\nMerdeka! 🎉💜'
+},
+  {
+    id:4, series:1, week:4,
+    title:'Aku Gak Perlu Pura-pura', date:'23 Agustus 2026',
+    verse:'Mazmur 139:1-4', keyMessage:'Tuhan tau kamu apa adanya, gak perlu sok keren',
+    activity:'Sharing circle: \'Topeng yang kupakai\'',
+    hook:'Kita semua pake topeng. Di sekolah kita pake topeng A, di gereja topeng B, di rumah topeng C. Capek gak sih? Kabar baiknya: Tuhan tau kamu apa adanya, dan Dia tetep sayang.',
+    lessonPoints:['Mazmur 139:1-4 — Daud ngomong: Tuhan, Engkau tau kalo aku duduk, berdiri, bahkan tau isi pikiranku.', 'Daud gak takut Tuhan tau isi hatinya. Kenapa? Karena dia tau Tuhan sayang dia.', 'Kita sering pura-pura baik, pura-pura happy, pura-pura gak masalah. Tapi Tuhan lebih tertarik sama yang asli.', 'Ayat 23-24 — Daud malah minta: \'Selidiki aku.\' Dia gak sembunyi. Berani kamu minta Tuhan selidiki hati kamu?'],
+    discussion:['Topeng apa yang paling sering kamu pake? (di sekolah, di rumah, di gereja)', 'Apa yang bikin kamu susah jujur sama Tuhan?', 'Kalo Tuhan tau semuanya, kenapa kita masih takut jujur?'],
+    application:'Minggu ini, luangkan 5 menit sendiri, buka hati kamu ke Tuhan. Ngomong aja apa adanya. Gak perlu pake bahasa rohani yang bagus.',
+    prayerPoints:['Minta Roh Kudus ngasih keberanian buat jujur', 'Doa buat luka/trauma yang disembunyiin', 'Syukur karena Tuhan terima kita apa adanya'],
+    prep:['Kertas kosong buat nulis topeng mereka', 'Amplop — buat yang mau ngumpulin tanpa nama', 'Suasana remang-remang / lilin (biar cozy)'],
+    songs:['Bapa yang Baik — JPCC Worship', 'Kau Tempat Hatiku — True Worshippers', 'Kumau MenyembahMu — Sari Simorangkir'],
+    gameId:'Dua Wajah',
+    waText:'🎭 Episode 4: AKU GAK PERLU PURA-PURA\n🗓️ 23 Agustus 2026 | 16.00\n\nCapek pura-pura? Di sekolah pura-pura bahagia, di gereja pura-pura kudus, di rumah pura-pura baik-baik aja?\nMinggu ini kita belajar: TUHAN TERIMA LO APA ADANYA 💜\n\nSuasana spesial — jangan sampai ketinggalan!'
+},
+  {
+    id:5, series:1, week:5,
+    title:'Aku Anak Tuhan', date:'30 Agustus 2026',
+    verse:'Yohanes 1:12', keyMessage:'Status kamu bukan dari sekolah atau pergaulan, tapi dari Tuhan',
+    activity:'Komitmen: \'Aku anak Tuhan\' bersama',
+    hook:'Banyak orang nentuin status dari: anak siapa, sekolah apa, punya apa, PACAR siapa. Tapi ada satu status yang gak bisa diambil dari kamu: ANAK TUHAN.',
+    lessonPoints:['Yohanes 1:12 — \'Tetapi semua orang yang menerima-Nya, diberi-Nya kuasa menjadi anak-anak Allah.\'', 'Kata \'kuasa\' (exousia) = hak, otoritas. Kamu punya hak penuh sebagai anak Tuhan.', 'Bukan karena kamu baik atau kamu rajin ke gereja. Tapi karena kamu TERIMA DIA.', 'Sebagai anak, kamu punya warisan. Warisan anak Tuhan: kasih, damai, hidup kekal.'],
+    discussion:['Kalo ada yang nanya \'kamu anak siapa?\' selain anak ortu, kamu bakal jawab apa?', 'Apa bedanya jadi \'anak Tuhan\' sama cuma \'dateng ke gereja\'?', 'Dengan status anak Tuhan, tanggung jawab apa yang kamu pikul?'],
+    application:'Minggu ini, setiap kali kamu ragu sama diri kamu, bilang: \'Aku ini anak Tuhan. Aku punya Bapa di surga.\'',
+    prayerPoints:['Ikrar komitmen sebagai anak Tuhan', 'Doa buat yang masih merasa bukan anak Tuhan', 'Doa buat hubungan dengan Bapa di Surga'],
+    prep:['Kertas komitmen / kartu identitas \'Anak Tuhan\'', 'Slide Yohanes 1:12', 'Lilin / lampu kecil buat momen komitmen'],
+    songs:['Engkau Anak Raja — True Worshippers', 'Ku Disempurnakan — JPCC Worship', 'Anak-anak Terang — Nikita'],
+    gameId:'Sambung Ayat',
+    waText:'👑 EPISODE FINAL SEASON 1!\n🔥 Episode 5: AKU ANAK TUHAN\n🗓️ 30 Agustus 2026 | 16.00\n\nAnak siapa kamu? Anak orang tua? Anak sekolah?\nAda status yang LEBIH TINGGI dari semua itu: ANAK ALLAH! 👑\n\nMinggu ini ada momen komitmen spesial — jangan sampe gak dateng!\n\nKita tutup Season 1 dengan meriah! 🎉💜'
+},
+  {
+    id:6, series:1, week:6,
+    title:'Review & Games Day', date:'6 September 2026',
+    verse:'-', keyMessage:'Refreshing + kuis dari series 1-5',
+    activity:'Games estafet, kuis tim',
+    hook:'Hari ini gak ada materi baru! Kita review apa yang udah kita pelajari 5 minggu ini lewat games dan kuis seru!',
+    lessonPoints:['Review singkat 5 minggu: 1) Aku bukan kecelakaan 2) Aku berharga 3) Aku istimewa 4) Aku gak perlu pura-pura 5) Aku anak Tuhan', 'Kuis tim: pertanyaan dari Series 1-5', 'Pemenang dapet hadiah!'],
+    discussion:[],
+    application:'Minggu depan Season 2 dimulai!',
+    prayerPoints:['Syukur untuk Season 1', 'Doa untuk Season 2'],
+    prep:['Soal kuis 20 pertanyaan', 'Hadiah buat pemenang', 'Snack spesial', 'Sound system buat games'],
+    songs:['Campur semua lagu favorit dari 5 minggu'],
+    gameId:'Kuis Season 1',
+    waText:'🎪 GAMES DAY! Season 1 FINALE!\n🗓️ 6 September 2026 | 16.00\n\n5 minggu belajar — sekarang waktunya FUN!\nKUIS TIM + GAMES ESTAFET + HADIAH 🎁\n\nLo udah hafal Series 1? Buktikan!\nAjak tim kamu buat menang! 🔥🔥'
+}];
+var G = [{
+    id:'Gambar Dirimu', title:'Gambar Dirimu', type:'Kreatif', durasi:'10 menit', prep:'Kertas & crayon', desc:'Minta anak-anak gambar diri mereka dengan tulisan \'Aku adalah masterpiece\'.'
+  },
+  {
+    id:'Tebak Harganya', title:'Tebak Harganya', type:'Ice Breaker', durasi:'5 menit', prep:'Barang random', desc:'Siapkan barang random, minta anak tebak harga. Transisi: \'Kalo kamu, berapa harga kamu?\''
+  },
+  {
+    id:'Tebak Bakat', title:'Tebak Bakat', type:'Interaktif', durasi:'8 menit', prep:'Tidak ada', desc:'Minta anak nunjukin bakat mereka dalam 10 detik. Yang lain nebak.'
+  },
+  {
+    id:'Dua Wajah', title:'Dua Wajah', type:'Ice Breaker', durasi:'5 menit', prep:'Topeng kertas', desc:'Satu orang pake topeng ngomong \'palsu\'. Pasangan nebak mana yang bener.'
+  },
+  {
+    id:'Sambung Ayat', title:'Sambung Ayat', type:'Kompetisi', durasi:'8 menit', prep:'Ayat dipotong per kata', desc:'Estafet nyusun ayat Yohanes 1:12. Tim tercepat menang.'
+  },
+  {
+    id:'Kuis Season 1', title:'Kuis Season 1', type:'Kompetisi', durasi:'15 menit', prep:'Soal + bel', desc:'20 pertanyaan dari Series 1. Rebutan pake bel.'
+  },
+  {
+    id:'Simon Says Kristus', title:'Simon Says Kristus', type:'Ice Breaker', durasi:'5 menit', prep:'Tidak ada', desc:'Versi kristen dari Simon Says.'
+  },
+  {
+    id:'Tebak Lagu Rohani', title:'Tebak Lagu Rohani', type:'Ice Breaker', durasi:'7 menit', prep:'HP/speaker', desc:'Putar intro lagu, tim rebutan tebak judul + penyanyi.'
+  },
+  {
+    id:'Estafet Kelereng', title:'Estafet Kelereng', type:'Aktif', durasi:'10 menit', prep:'Sendok + kelereng + balon', desc:'Bawa kelereng pake sendok, dudukin balon di ujung.'
+  },
+  {
+    id:'Kursi Musik Rohani', title:'Kursi Musik Rohani', type:'Aktif', durasi:'5 menit', prep:'Kursi + musik', desc:'Kursi musik pake lagu rohani. Yang kalah jawab pertanyaan.'
+  }];
+
+var C = 1, CE = null, CT = 0;
+var SK = 'gbi-rmj';
+
+function gk(k) { try { var s = JSON.parse(localStorage.getItem(SK))||{}; return s[k]; } catch(e) { return null; } }
+function sk(k,v) { var s = JSON.parse(localStorage.getItem(SK))||{}; s[k]=v; localStorage.setItem(SK,JSON.stringify(s)); }
+
+function st(t) {
+  CT = t;
+  document.querySelectorAll('.tab').forEach(function(el) { el.classList.remove('active'); });
+  document.getElementById('t'+t).classList.add('active');
+  document.querySelectorAll('.bottom-nav button').forEach(function(el,i) { el.classList.remove('active'); if(i===t) el.classList.add('active'); });
+  if(t===0) rt();
+  else if(t===1) rl();
+  else if(t===2) rg();
+  else if(t===3) { rc(); ps(); rs(); le(); rw(); }
+}
+
+function sf(n) {
+  C = n;
+  var btns = document.querySelectorAll('.filter-bar button');
+  btns[0].classList.toggle('active', n===1);
+  btns[1].classList.toggle('active', n===0);
+  rt();
+}
+
+function rt() {
+  var fl = document.getElementById('tlist');
+  var done = gk('done')||{};
+  fl.innerHTML = '';
+  var arr = C===0 ? E : E.filter(function(e){ return e.series===C; });
+  if(arr.length===0) { fl.innerHTML = '<div class="empty">Belum ada episode</div>'; return; }
+  arr.forEach(function(ep) {
+    var sts = 'upcoming', bc = 'badge-upcoming', bt = 'Akan Datang';
+    if(done['e'+ep.id]) { sts='past'; bc='badge-past'; bt='✅ Selesai'; }
+    var card = document.createElement('div');
+    card.className = 'ep-card' + (sts==='current'?' current':'');
+    card.onclick = function(){ ol(ep.id); };
+    card.innerHTML = '<span class="badge '+bc+'">'+bt+'</span><span class="series-tag">S'+ep.series+'.E'+ep.week+'</span><h3>'+ep.title+'</h3><div class="meta"><span>📅 '+ep.date+'</span></div>'+(ep.verse!==' -'?'<span class="verse-badge">📖 '+ep.verse+'</span>':'');
+    fl.appendChild(card);
+  });
+  var dc = arr.filter(function(e){ return done['e'+e.id]; }).length;
+  document.getElementById('pbar').style.width = (arr.length>0?(dc/arr.length*100):0)+'%';
+  document.getElementById('plabel').textContent = dc+'/'+arr.length;
+}
+
+function ol(id) {
+  CE = E.find(function(e){ return e.id===id; });
+  st(1);
+}
+
+function rl() {
+  var el = document.getElementById('lcont');
+  if(!CE) { el.innerHTML = '<div class="empty">Pilih episode dari Timeline 📅</div>'; return; }
+  var ep = CE;
+  var pts = ep.lessonPoints.map(function(p){ return '<li>'+p+'</li>'; }).join('');
+  var disc = ep.discussion.length>0 ? '<div class="sec"><h3>💬 Diskusi (5 menit)</h3><ol style="padding-left:20px">'+ep.discussion.map(function(q){ return '<li style="margin-bottom:4px;font-size:.85rem">'+q+'</li>'; }).join('')+'</ol></div>' : '';
+  var songs = ep.songs.map(function(s){ return '<span class="song-chip">'+s+'</span>'; }).join(' ');
+  el.innerHTML = '<div class="sec"><h3>📌 '+ep.title+'</h3><p>📅 '+ep.date+' • S'+ep.series+'.E'+ep.week+'</p>'+(ep.verse!==' -'?'<p style="margin-top:6px">📖 <strong>'+ep.verse+'</strong></p>':'')+'<div class="highlight">'+ep.keyMessage+'</div></div><div class="sec"><h3>🎬 Hook (2-3 menit)</h3><p>'+ep.hook+'</p></div><div class="sec"><h3>📖 Isi Firman (8-10 menit)</h3><ul>'+pts+'</ul></div>'+disc+'<div class="sec"><h3>✋ Aplikasi</h3><p>'+ep.application+'</p></div><div class="sec"><h3>🙏 Doa</h3><ul>'+ep.prayerPoints.map(function(p){return '<li>'+p+'</li>';}).join('')+'</ul></div><div class="sec"><h3>🎮 Aktivitas</h3><p>'+ep.activity+'</p></div><div class="sec"><h3>📦 Persiapan</h3><ul>'+ep.prep.map(function(p){return '<li>'+p+'</li>';}).join('')+'</ul></div><div class="sec"><h3>🎵 Lagu</h3><p>'+songs+'</p></div><div class="sec" style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn-copy" onclick="md('+ep.id+')" style="padding:10px 20px;border:none;border-radius:10px;cursor:pointer;background:var(--primary);color:#fff;font-size:.85rem">✅ Tandai Selesai</button></div>';
+}
+
+function md(id) {
+  var done = gk('done')||{};
+  done['e'+id] = true;
+  sk('done', done);
+  rt();
+  if(CE && CE.id===id) rl();
+}
+
+function rg() {
+  var q = document.getElementById('gsearch').value.toLowerCase();
+  var el = document.getElementById('glist');
+  el.innerHTML = '';
+  var arr = G.filter(function(g){ return g.title.toLowerCase().indexOf(q)>=0 || g.type.toLowerCase().indexOf(q)>=0 || g.desc.toLowerCase().indexOf(q)>=0; });
+  if(arr.length===0) { el.innerHTML = '<div class="empty">Games gak ditemukan</div>'; return; }
+  arr.forEach(function(g) {
+    el.innerHTML += '<div class="game-card"><h4>🎯 '+g.title+'</h4><div class="tags"><span>'+g.type+'</span><span>⏱ '+g.durasi+'</span><span>📦 '+g.prep+'</span></div><p>'+g.desc+'</p></div>';
+  });
+}
+
+function ps() {
+  ['selsong','seleval','selwa'].forEach(function(id) {
+    var sel = document.getElementById(id);
+    sel.innerHTML = '';
+    E.forEach(function(e) { sel.innerHTML += '<option value="'+e.id+'">S'+e.series+'.E'+e.week+' — '+e.title+'</option>'; });
+  });
+}
+
+function rs() {
+  var id = parseInt(document.getElementById('selsong').value);
+  var ep = E.find(function(e){ return e.id===id; });
+  if(!ep) { document.getElementById('slist').innerHTML = '<div class="empty">Pilih episode</div>'; return; }
+  document.getElementById('slist').innerHTML = '<div class="sec"><h3>🎵 '+ep.title+'</h3><p>'+ep.songs.map(function(s){return '<span class="song-chip">'+s+'</span>';}).join(' ')+'</p></div>';
+}
+
+function le() {
+  var id = parseInt(document.getElementById('seleval').value);
+  var saved = gk('e'+id)||{rating:0,note:'',kids:0,newKids:0,followUp:''};
+  var el = document.getElementById('eform');
+  el.innerHTML = '<div class="tool-section"><p style="font-size:.85rem">Jumlah anak:</p><input type="number" id="ekids" value="'+saved.kids+'" onchange="se('+id+')"></div><div class="tool-section"><p style="font-size:.85rem">Anak baru:</p><input type="number" id="enew" value="'+saved.newKids+'" onchange="se('+id+')"></div><div class="tool-section"><p style="font-size:.85rem">Rating:</p><div id="stars">'+[1,2,3,4,5].map(function(n){return '<span style="font-size:1.5rem;cursor:pointer;opacity:'+(n<=saved.rating?'1':'.3')+'" onclick="re('+id+','+n+')">⭐</span>';}).join('')+'</div></div><div class="tool-section"><p style="font-size:.85rem">Follow-up:</p><textarea class="tarea" id="efollow" onchange="se('+id+')">'+(saved.followUp||'')+'</textarea></div><div class="tool-section"><p style="font-size:.85rem">Catatan:</p><textarea class="tarea" id="enote" onchange="se('+id+')" rows="3">'+(saved.note||'')+'</textarea></div>';
+}
+
+function se(id) {
+  var s = gk('e'+id)||{};
+  s.kids = document.getElementById('ekids')?.value||0;
+  s.newKids = document.getElementById('enew')?.value||0;
+  s.followUp = document.getElementById('efollow')?.value||'';
+  s.note = document.getElementById('enote')?.value||'';
+  sk('e'+id, s);
+}
+
+function re(id,n) {
+  var s = gk('e'+id)||{};
+  s.rating = n;
+  sk('e'+id, s);
+  le();
+}
+
+function rw() {
+  var id = parseInt(document.getElementById('selwa').value);
+  var ep = E.find(function(e){ return e.id===id; });
+  if(!ep) { document.getElementById('wcont').innerHTML = '<div class="empty">Pilih episode</div>'; return; }
+  document.getElementById('wcont').innerHTML = '<div class="wa-card"><div class="wa-text">'+ep.waText+'</div><div class="wa-actions"><button class="btn-copy" onclick="cw('+id+')">📋 Copy</button><button class="btn-wa" onclick="ow('+id+')">📱 Buka WA</button></div></div>';
+}
+
+function cw(id) {
+  var ep = E.find(function(e){ return e.id===id; });
+  if(!ep) return;
+  navigator.clipboard.writeText(ep.waText);
+}
+
+function ow(id) {
+  var ep = E.find(function(e){ return e.id===id; });
+  if(!ep) return;
+  window.open('https://wa.me/?text='+encodeURIComponent(ep.waText), '_blank');
+}
+
+function rc() {
+  var items = ['Makanan ringan & minuman','LCD / Proyektor siap','Slide ayat & materi','Sound system & mic','Worksheet / kertas aktivitas (print)','Backing track / playlist worship','Alat games (sesuai episode)','Absen kehadiran','Hadiah kecil (kalo ada games)','Kebersihan ruangan setelah ibadah'];
+  var checked = gk('chk')||[];
+  var el = document.getElementById('chklist');
+  el.innerHTML = '';
+  items.forEach(function(item, i) {
+    var d = document.createElement('div');
+    d.className = 'chk-item' + (checked.indexOf(i)>=0?' done':'');
+    d.innerHTML = '<input type="checkbox"'+(checked.indexOf(i)>=0?' checked':'')+' onchange="tc('+i+')"> '+item;
+    el.appendChild(d);
+  });
+}
+
+function tc(i) {
+  var c = gk('chk')||[];
+  var idx = c.indexOf(i);
+  if(idx>=0) c.splice(idx,1); else c.push(i);
+  sk('chk',c);
+  rc();
+}
+
+rt();
+</script>
+</body>
+</html>
