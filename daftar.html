@@ -91,7 +91,7 @@ select {
     <div class="icon">🫂</div>
     <h1>ROCKET</h1>
     <p>GBI ROCK Banjarmasin — Remaja</p>
-    <div class="badge">🚀 Season 1 — Identity</div>
+    <div class="badge">🚀</div>
   </div>
 
   <div class="info">
@@ -99,8 +99,13 @@ select {
   </div>
 
   <div class="form-group">
+    <label>Nama Panggilan</label>
+    <input id="fNickname" placeholder="Contoh: Ivan">
+  </div>
+
+  <div class="form-group">
     <label>Nama Lengkap</label>
-    <input id="fName" placeholder="Nama panggilan + nama lengkap">
+    <input id="fName" placeholder="Nama lengkap kamu">
   </div>
 
   <div class="form-row">
@@ -122,7 +127,7 @@ select {
   <div class="form-group">
     <label>No. WhatsApp</label>
     <input id="fWA" placeholder="08123456789" type="tel">
-    <span style="font-size:.7rem;color:var(--muted);margin-top:4px;display:block">Nomor kamu sendiri atau nomor orang tua</span>
+    <span style="font-size:.7rem;color:var(--muted);margin-top:4px;display:block">Nomor Pribadi atau No Orangtua</span>
   </div>
 
   <div class="form-group">
@@ -146,6 +151,7 @@ select {
 
 <script>
 function simpan() {
+  const nickname = document.getElementById('fNickname').value.trim();
   const name = document.getElementById('fName').value.trim();
   const birthPlace = document.getElementById('fBirthPlace').value.trim();
   const birthDate = document.getElementById('fBirthDate').value;
@@ -153,11 +159,12 @@ function simpan() {
   const wa = document.getElementById('fWA').value.trim();
   const grade = document.getElementById('fGrade').value;
 
-  if (!name) { tampilPesan('Nama kamu harus diisi dulu ya!', false); return; }
+  if (!nickname) { tampilPesan('Nama panggilan diisi dulu ya!', false); return; }
+  if (!name) { tampilPesan('Nama lengkap diisi dulu ya!', false); return; }
   if (!grade) { tampilPesan('Pilih kelas kamu dulu', false); return; }
 
   const entry = {
-    name, birthPlace, birthDate, school, wa, grade,
+    nickname, name, birthPlace, birthDate, school, wa, grade,
     id: Date.now().toString(36) + Math.random().toString(36).slice(2, 5),
     createdAt: new Date().toISOString()
   };
@@ -168,6 +175,7 @@ function simpan() {
     data.push(entry);
     localStorage.setItem('gbirmj-pendaftaran', JSON.stringify(data));
     tampilPesan('Terima kasih! Data kamu udah tersimpan 🙏', true);
+    document.getElementById('fNickname').value = '';
     document.getElementById('fName').value = '';
     document.getElementById('fBirthPlace').value = '';
     document.getElementById('fBirthDate').value = '';
